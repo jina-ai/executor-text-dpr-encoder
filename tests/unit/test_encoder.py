@@ -27,11 +27,6 @@ def test_config():
     encoder = Executor.load_config(str(Path(__file__).parents[2] / "config.yml"))
     assert encoder.encoder_type == "question"
 
-
-def test_no_document(basic_encoder: DPRTextEncoder):
-    basic_encoder.encode(None, {})
-
-
 def test_empty_documents(basic_encoder: DPRTextEncoder):
     docs = DocumentArray([])
     basic_encoder.encode(docs, {})

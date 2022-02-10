@@ -107,7 +107,7 @@ class DPRTextEncoder(Executor):
 
     @requests
     def encode(
-        self, docs: Optional[DocumentArray] = None, parameters: dict = {}, **kwargs
+        self, docs: DocumentArray, parameters: dict = {}, **kwargs
     ):
         """
         Encode all docs with text and store the encodings in the embedding
@@ -119,9 +119,6 @@ class DPRTextEncoder(Executor):
             ``batch_size``. For example,
             ``parameters={'traversal_paths': '@r', 'batch_size': 10}``
         """
-
-        if docs is None:
-            return
 
         document_batches_generator = DocumentArray(
             filter(
