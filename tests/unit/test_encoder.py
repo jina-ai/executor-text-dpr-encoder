@@ -83,7 +83,7 @@ def test_encoding_gpu():
 
 
 @pytest.mark.parametrize(
-    "traversal_paths, counts",
+    "access_paths, counts",
     [
         ("@r", [["@r", 1], ["@c", 0], ["@cc", 0]]),
         ("@c", [["@r", 0], ["@c", 3], ["@cc", 0]]),
@@ -92,7 +92,7 @@ def test_encoding_gpu():
     ],
 )
 def test_traversal_path(
-    traversal_paths: List[str], counts: List, basic_encoder: DPRTextEncoder
+    access_paths: List[str], counts: List, basic_encoder: DPRTextEncoder
 ):
     text = "blah"
     docs = DocumentArray([Document(id="root1", text=text)])
@@ -106,7 +106,7 @@ def test_traversal_path(
         Document(id="chunk112", text=text),
     ]
 
-    basic_encoder.encode(docs=docs, parameters={"traversal_paths": traversal_paths})
+    basic_encoder.encode(docs=docs, parameters={"access_paths": access_paths})
     for path, count in counts:
         embeddings = docs[path].embeddings
 
