@@ -3,7 +3,6 @@ from typing import Optional
 import torch
 from jina import DocumentArray, Executor, requests
 from jina.logging.logger import JinaLogger
-from jina.helper import deprecated_alias
 from transformers import (DPRContextEncoder, DPRContextEncoderTokenizerFast,
                           DPRQuestionEncoder, DPRQuestionEncoderTokenizerFast)
 
@@ -18,7 +17,6 @@ class DPRTextEncoder(Executor):
     encoding method used in model training.
     """
 
-    @deprecated_alias(traversal_paths=('access_paths', 0))
     def __init__(
         self,
         pretrained_model_name_or_path: str = "facebook/dpr-question_encoder-single-nq-base",
@@ -26,7 +24,8 @@ class DPRTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
-        access_paths: str = "@r",
+        access_paths: str = '@r',
+        traversal_paths: Optional[str] = None,
         batch_size: int = 32,
         device: str = "cpu",
         *args,
@@ -49,6 +48,7 @@ class DPRTextEncoder(Executor):
         :param max_length: Max length argument for the tokenizer
         :param access_paths: Default access paths for encoding, used if the
             access path is not passed as a parameter with the request.
+        :param traversal_paths: Please use `access_paths`
         :param batch_size: Default batch size for encoding, used if the
             batch size is not passed as a parameter with the request.
         :param device: The device (cpu or gpu) that the model should be on.
@@ -105,6 +105,15 @@ class DPRTextEncoder(Executor):
         self.model = self.model.to(self.device).eval()
 
         self.access_paths = access_paths
+        if traversal_paths is not None:
+            import warnings
+            warnings.warn(
+                f'`traversal_paths` is renamed to `access_paths` with the same usage, please use the latter instead. '
+                f'`traversal_paths` will be removed soon.',
+                DeprecationWarning,
+            )
+            self.access_paths = traversal_paths
+
         self.batch_size = batch_size
 
     @requests
@@ -127,7 +136,7 @@ class DPRTextEncoder(Executor):
             import warnings
             warnings.warn(
                 f'`traversal_paths` is renamed to `access_paths` with the same usage, please use the latter instead. '
-                f'The old function will be removed soon.',
+                f'`traversal_paths` will be removed soon.',
                 DeprecationWarning,
             )
             parameters['access_paths'] = access_paths
