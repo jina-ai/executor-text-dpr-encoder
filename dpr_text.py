@@ -6,6 +6,7 @@ from jina.logging.logger import JinaLogger
 from transformers import (DPRContextEncoder, DPRContextEncoderTokenizerFast,
                           DPRQuestionEncoder, DPRQuestionEncoderTokenizerFast)
 
+import warnings
 
 class DPRTextEncoder(Executor):
     """
@@ -24,7 +25,8 @@ class DPRTextEncoder(Executor):
         base_tokenizer_model: Optional[str] = None,
         title_tag_key: Optional[str] = None,
         max_length: Optional[int] = None,
-        traversal_paths: str = "@r",
+        access_paths: str = "@r",
+        traversal_paths: Optional[str] = None,
         batch_size: int = 32,
         device: str = "cpu",
         *args,
@@ -45,8 +47,9 @@ class DPRTextEncoder(Executor):
             tag property. It is recommended to set this property for context encoders,
             to match the model pre-training. It has no effect for question encoders.
         :param max_length: Max length argument for the tokenizer
-        :param traversal_paths: Default traversal paths for encoding, used if the
+        :param access_paths: Default traversal paths for encoding, used if the
             traversal path is not passed as a parameter with the request.
+        :param traversal_paths: please use access_paths
         :param batch_size: Default batch size for encoding, used if the
             batch size is not passed as a parameter with the request.
         :param device: The device (cpu or gpu) that the model should be on.
@@ -102,7 +105,13 @@ class DPRTextEncoder(Executor):
 
         self.model = self.model.to(self.device).eval()
 
-        self.traversal_paths = traversal_paths
+        if traversal_paths is not None:
+            self.access_paths = traversal_paths
+            warnings.warn("'traversal_paths' will de deprecated in the future, please use 'access_paths'.",
+                          DeprecationWarning,
+                          stacklevel=2)
+        else:
+            self.access_paths = access_paths
         self.batch_size = batch_size
 
     @requests
@@ -117,13 +126,13 @@ class DPRTextEncoder(Executor):
             ``text`` attribute.
         :param parameters: dictionary to define the ``traversal_path`` and the
             ``batch_size``. For example,
-            ``parameters={'traversal_paths': '@r', 'batch_size': 10}``
+            ``parameters={'access_paths': '@r', 'batch_size': 10}``
         """
 
         document_batches_generator = DocumentArray(
             filter(
                 lambda x: bool(x.text),
-                docs[parameters.get("traversal_paths", self.traversal_paths)],
+                docs[parameters.get("access_paths", self.access_paths)],
             )
         ).batch(batch_size=parameters.get("batch_size", self.batch_size))
 
